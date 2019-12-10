@@ -9,4 +9,4 @@ for noun in range(100):
         intcode.intcode(program)
         if (program[0]==19690720):
             print(100*noun+verb)
-            exit
+            exit()

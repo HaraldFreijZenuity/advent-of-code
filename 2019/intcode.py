@@ -5,8 +5,11 @@ instruction_lengths = [0, 4, 4, 2, 2, 3, 3, 4, 4]
 instructions = ['', '+', '*', 'input', 'output', 'jump-if-true', 'jump-if-false', 'less than', 'equals']
 
 
-def intcode(program, input_value=None):
+def intcode(program, input_values=None):
+    if input_values is None:
+        input_values = []
     curr_pos = 0
+    input_pos = 0
     output = []
     while(True):
         instruction = program[curr_pos]
@@ -27,7 +30,8 @@ def intcode(program, input_value=None):
         elif(opcode == 2):  # Multiplication
             program[program[curr_pos+3]] = values[0] * values[1]
         elif(opcode == 3):  # Input
-            program[program[curr_pos+1]] = input_value
+            program[program[curr_pos+1]] = input_values[input_pos]
+            input_pos += 1
         elif(opcode == 4):  # Output
             output.append(values[0])
         elif(opcode == 5):  # Jump-if-true
