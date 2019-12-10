@@ -5,6 +5,7 @@ with open("input/6_map.txt", 'r') as map_txt:
         orbits[entry[1]] = entry[0]
 n_orbits = 0
 layer = {}
+# Build map, part 1
 for obj in orbits:
     layer[obj] = 0
     it_obj = obj
@@ -13,6 +14,7 @@ for obj in orbits:
         it_obj = orbits[it_obj]
     n_orbits += layer[obj]
 print(n_orbits)
+# Count steps, part 2
 n_steps = 0
 c1 = orbits['YOU']
 l1 = layer['YOU']
