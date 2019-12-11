@@ -3,19 +3,20 @@ import numpy
 n_read_parameters = [0, 2, 2, 0, 1, 2, 2, 2, 2]
 instruction_lengths = [0, 4, 4, 2, 2, 3, 3, 4, 4]
 instructions = ['', '+', '*', 'input', 'output', 'jump-if-true', 'jump-if-false', 'less than', 'equals']
+HALTED = 0
+WAITING = 1
 
 
-def intcode(program, input_values=None):
+def intcode(program, curr_pos=0, input_values=None):
     if input_values is None:
         input_values = []
-    curr_pos = 0
     input_pos = 0
     output = []
     while(True):
         instruction = program[curr_pos]
         (opcode, modes) = parse_instruction(instruction)
         if(opcode == 99):
-            return output
+            return curr_pos, output, HALTED
         values = []
         for i in range(n_read_parameters[opcode]):
             if (modes[i] == 0):
@@ -24,12 +25,14 @@ def intcode(program, input_values=None):
                 values.append(program[curr_pos+i+1])
             else:
                 print('Error! Invalid mode!')
-                return
+                assert false
         if (opcode == 1):  # Addition
             program[program[curr_pos+3]] = values[0] + values[1]
         elif(opcode == 2):  # Multiplication
             program[program[curr_pos+3]] = values[0] * values[1]
         elif(opcode == 3):  # Input
+            if(input_pos >= len(input_values)):
+                return curr_pos, output, WAITING
             program[program[curr_pos+1]] = input_values[input_pos]
             input_pos += 1
         elif(opcode == 4):  # Output
@@ -46,7 +49,7 @@ def intcode(program, input_values=None):
             program[program[curr_pos+3]] = 1 if values[0] == values[1] else 0
         else:
             print('Error! Invalid opcode!')
-            return
+            assert false
         curr_pos += instruction_lengths[opcode]
 
 
