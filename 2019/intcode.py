@@ -1,56 +1,67 @@
 import numpy
 
-n_read_parameters = [0, 2, 2, 0, 1, 2, 2, 2, 2]
-instruction_lengths = [0, 4, 4, 2, 2, 3, 3, 4, 4]
+n_parameters = [0, 3, 3, 1, 1, 2, 2, 3, 3, 1]
+instruction_lengths = [0, 4, 4, 2, 2, 3, 3, 4, 4, 2]
 instructions = ['', '+', '*', 'input', 'output', 'jump-if-true', 'jump-if-false', 'less than', 'equals']
 HALTED = 0
 WAITING = 1
 
 
-def intcode(program, curr_pos=0, input_values=None):
+def intcode(program, curr_pos=0, offset_base=0, input_values=None):
     if input_values is None:
         input_values = []
     input_pos = 0
     output = []
+    stop_reason = None
     while(True):
         instruction = program[curr_pos]
         (opcode, modes) = parse_instruction(instruction)
         if(opcode == 99):
-            return curr_pos, output, HALTED
-        values = []
-        for i in range(n_read_parameters[opcode]):
+            stop_reason = HALTED
+            break
+        inst_pos = []
+        for i in range(n_parameters[opcode]):
             if (modes[i] == 0):
-                values.append(program[program[curr_pos+i+1]])
+                inst_pos.append(program[curr_pos+i+1])
             elif(modes[i] == 1):
-                values.append(program[curr_pos+i+1])
+                inst_pos.append(curr_pos+i+1)
+            elif(modes[i] == 2):
+                inst_pos.append(program[curr_pos+i+1]+offset_base)
             else:
                 print('Error! Invalid mode!')
                 assert false
+        for p in inst_pos:
+            if p >= len(program):
+                program.extend([0]*(p-len(program)+1))
         if (opcode == 1):  # Addition
-            program[program[curr_pos+3]] = values[0] + values[1]
+            program[inst_pos[2]] = program[inst_pos[0]] + program[inst_pos[1]]
         elif(opcode == 2):  # Multiplication
-            program[program[curr_pos+3]] = values[0] * values[1]
+            program[inst_pos[2]] = program[inst_pos[0]] * program[inst_pos[1]]
         elif(opcode == 3):  # Input
             if(input_pos >= len(input_values)):
-                return curr_pos, output, WAITING
-            program[program[curr_pos+1]] = input_values[input_pos]
+                stop_reason = WAITING
+                break
+            program[inst_pos[0]] = input_values[input_pos]
             input_pos += 1
         elif(opcode == 4):  # Output
-            output.append(values[0])
+            output.append(program[inst_pos[0]])
         elif(opcode == 5):  # Jump-if-true
-            if(values[0] != 0):
-                curr_pos = values[1]-instruction_lengths[opcode]
+            if(program[inst_pos[0]] != 0):
+                curr_pos = program[inst_pos[1]]-instruction_lengths[opcode]
         elif(opcode == 6):  # Jump-if-false
-            if(values[0] == 0):
-                curr_pos = values[1]-instruction_lengths[opcode]
+            if(program[inst_pos[0]] == 0):
+                curr_pos = program[inst_pos[1]]-instruction_lengths[opcode]
         elif(opcode == 7):  # Less than
-            program[program[curr_pos+3]] = 1 if values[0] < values[1] else 0
+            program[inst_pos[2]] = 1 if program[inst_pos[0]] < program[inst_pos[1]] else 0
         elif(opcode == 8):  # Equals
-            program[program[curr_pos+3]] = 1 if values[0] == values[1] else 0
+            program[inst_pos[2]] = 1 if program[inst_pos[0]] == program[inst_pos[1]] else 0
+        elif(opcode == 9):  # Offset
+            offset_base += program[inst_pos[0]]
         else:
             print('Error! Invalid opcode!')
             assert false
         curr_pos += instruction_lengths[opcode]
+    return output, curr_pos, stop_reason, offset_base
 
 
 def parse_instruction(instruction):
@@ -58,6 +69,6 @@ def parse_instruction(instruction):
     if(opcode == 99):
         return (opcode, [])
     modes = []
-    for i in range(n_read_parameters[opcode]):
+    for i in range(n_parameters[opcode]):
         modes.append(numpy.mod(int(instruction/(10**(i+2))), 10))
     return (opcode, modes)
