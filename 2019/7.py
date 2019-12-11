@@ -1,13 +1,10 @@
 import itertools
 import intcode
-with open("input/7_program.txt", 'r') as pgm_file:
+import os
+input_file_name = os.path.normpath(os.path.join(os.path.abspath(__file__), '../input/7_program.txt'))
+with open(input_file_name, 'r') as pgm_file:
     program = [int(x) for x in pgm_file.readline().strip('\n').split(',')]
 
-program = [3, 26, 1001, 26, -4, 26, 3, 27, 1002, 27, 2, 27, 1, 27, 26,
-           27, 4, 27, 1001, 28, -1, 28, 1005, 28, 6, 99, 0, 0, 5]
-# program = [3, 52, 1001, 52, -5, 52, 3, 53, 1, 52, 56, 54, 1007, 54, 5, 55, 1005, 55, 26, 1001, 54,
-#            -5, 54, 1105, 1, 12, 1, 53, 54, 53, 1008, 54, 0, 55, 1001, 55, 1, 55, 2, 53, 55, 53, 4,
-#            53, 1001, 56, -1, 56, 1005, 56, 6, 99, 0, 0, 0, 0, 10]
 n_amplifiers = 5
 # Part 1
 max_out = 0
@@ -22,19 +19,19 @@ print(max_out)
 # Part 2
 max_out = 0
 for perm in itertools.permutations(range(n_amplifiers, 2*n_amplifiers)):
-    programs = [program for i in range(n_amplifiers)]
+    programs = [program.copy() for i in range(n_amplifiers)]
     positions = [0]*n_amplifiers
     inputs = [[perm[i]] for i in range(n_amplifiers)]
     inputs[0].append(0)
+    n = 0
     for i in itertools.cycle(range(n_amplifiers)):
-        print('Running program {} with input {}'.format(i, inputs[i]))
+        n += 1
         (positions[i], outputs, stop_reason) = intcode.intcode(
             programs[i], curr_pos=positions[i], input_values=inputs[i])
-        print('Stopping for reason {} at {} with outputs {}'.format(stop_reason, positions[i], outputs))
-        if (i == 4):
+        if (i == n_amplifiers-1):
             thruster_out = outputs[0]
-        if(stop_reason == intcode.HALTED):
-            break
+            if(stop_reason == intcode.HALTED):
+                break
         inputs[i] = []
         inputs[(i+1) % n_amplifiers].append(outputs[0])
     max_out = max(max_out, thruster_out)
