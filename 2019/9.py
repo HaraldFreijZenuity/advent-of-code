@@ -6,3 +6,5 @@ with open(input_file_name, 'r') as pgm_file:
     program = [int(x) for x in pgm_file.readline().strip('\n').split(',')]
 output = intcode.intcode(program, input_values=[1])
 print(output)
+output = intcode.intcode(program, input_values=[2])
+print(output)
