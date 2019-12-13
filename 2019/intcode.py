@@ -7,6 +7,8 @@ HALTED = 0
 WAITING = 1
 
 
+###
+# Runs an intcode program, and returns output, curr_pos, stop_reason, offset_base
 def intcode(program, curr_pos=0, offset_base=0, input_values=None):
     if input_values is None:
         input_values = []
