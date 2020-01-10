@@ -5,7 +5,6 @@ import sys
 import termios
 import tty
 import time
-from PIL import Image
 
 
 def getch():
