@@ -9,13 +9,8 @@ def fft(input, pattern):
     output = [0]*len(input)
     for i_in in range(len(input)):
         for i_out in range(1, len(output)+1):
-            # print(int((i_in+1)/i_out), end=',')
-            # print(int((i_in+1)/i_out) % len(pattern), end=',')
-            # print(pattern[int((i_in+1)/i_out) % len(pattern)], end='\t')
             output[i_out-1] += input[i_in]*pattern[int((i_in+1)/i_out) % len(pattern)]
-        # print('')
     output = [abs(x) % 10 for x in output]
-    # print('')
     return output
 
 
